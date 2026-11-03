@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>包種茶抽題</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&display=swap">
+<style>
+:root{--bg:#e6eee4;--surface:#f7faf5;--ink:#1d3a2c;--sub:#5b7466;--line:#b9cbbd;--accent:#2f6b4a;--accent-ink:#fff;--ok:#1f7a46;--okbg:#d3ecdc;--bad:#a8402a;--badbg:#f4dcd4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13211a;--surface:#1b2e24;--ink:#e3eee6;--sub:#9ab3a2;--line:#335141;--accent:#7fc69b;--accent-ink:#10231a;--ok:#7fd8a1;--okbg:#21432f;--bad:#f0a08a;--badbg:#4a2a22}}
+:root[data-theme="dark"]{--bg:#13211a;--surface:#1b2e24;--ink:#e3eee6;--sub:#9ab3a2;--line:#335141;--accent:#7fc69b;--accent-ink:#10231a;--ok:#7fd8a1;--okbg:#21432f;--bad:#f0a08a;--badbg:#4a2a22}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Serif TC","Songti TC","PingFang TC","Microsoft JhengHei",serif;line-height:1.7;min-height:100vh}
+main{max-width:640px;margin:0 auto;padding:28px 18px 48px}
+h1{font-size:1.6rem;margin:0 0 4px;letter-spacing:.04em}
+.lead{color:var(--sub);margin:0 0 22px;font-size:.95rem}
+.levels{display:flex;gap:8px;margin-bottom:20px}
+.levels button{flex:1;padding:12px 6px;font:inherit;font-weight:700;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;cursor:pointer}
+.levels button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:22px 20px}
+.q{font-size:1.15rem;font-weight:700;margin:0 0 16px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:10px;text-align:left;width:100%;padding:12px 14px;font:inherit;color:var(--ink);background:transparent;border:1.5px solid var(--line);border-radius:10px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt .k{font-weight:700;color:var(--sub);min-width:1.4em}
+.opt.ok{background:var(--okbg);border-color:var(--ok)}
+.opt.bad{background:var(--badbg);border-color:var(--bad)}
+.result{margin:18px 0 0;font-size:1.3rem;font-weight:700;min-height:1.9em}
+.result.ok{color:var(--ok)}.result.bad{color:var(--bad)}
+.next{margin-top:14px;padding:12px 22px;font:inherit;font-weight:700;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.empty{color:var(--sub);margin:0}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<h1>包種茶抽題</h1>
+<p class="lead">選一個難度，隨機抽一題。每題各自獨立，不計分。</p>
+<div class="levels" id="levels">
+<button data-lv="easy" aria-pressed="false">簡單</button>
+<button data-lv="mid" aria-pressed="false">中等</button>
+<button data-lv="hard" aria-pressed="false">困難</button>
+</div>
+<section class="card" id="card">
+<p class="empty" id="empty">請先選擇難度。</p>
+<div id="quiz" hidden>
+<p class="q" id="qtext"></p>
+<div class="opts" id="opts"></div>
+<p class="result" id="result" aria-live="polite"></p>
+<button class="next" id="next" hidden>再抽一題</button>
+</div>
+</section>
+</main>
+<script>
+const BANK={
+easy:[
+{q:"買進某公司的股票，代表你成為這家公司的什麼？",o:["股東（擁有公司一小部分）","員工","債權人（公司欠你錢）","客戶"],a:0},
+{q:"台灣的金融中心在哪？",o:["台南","金門","台北","花蓮"],a:2},
+{q:"提出「看不見的手」概念來形容市場機制會自動調節供需的經濟學家是？",o:["亞歷山大","亞當斯密","亞里士多德"],a:1},
+{q:"在一般供給法則下，商品的供給量和價錢成？",o:["正比","反比"],a:0},
+{q:"所謂「機會成本」是指面臨多個選擇時，被放棄的選項中價值最怎麼樣的一個？",o:["最高","最低","所有被放棄的選項之平均數"],a:0},
+{q:"下列何者最能表現貨幣的「交易媒介」功能？",o:["小明把錢存進銀行","小花用現金買珍珠奶茶","小華認為明年物價會上漲","小新比較兩家銀行利率"],a:1},
+{q:"衡量一個國家在一段時間內所生產的最終產品與勞務的市場總價值，簡稱為什麼？",o:["WTO","GNI","GPS","GDP"],a:3},
+{q:"某股票股價從 100 元跌到 90 元，跌幅是多少？",o:["9%","90%","5%","10%"],a:3}
+],
+mid:[
+{q:"當一般物價水準持續上漲時，在名目所得不變的情況下，通常會發生什麼事？",o:["貨幣購買力上升","貨幣購買力下降","貨幣購買力不變","人均所得增加"],a:1},
+{q:"假設其他條件不變，當某商品的市場價格上升時，依據需求法則，消費者的需求量通常會如何變化？",o:["上升","下降","不變","變成 0"],a:1},
+{q:"小明將 10,000 元存入銀行，銀行再將部分存款運用於放款。這最能反映銀行的哪一項功能？",o:["創造商品需求","金融中介與資金融通","決定商品價格","保證投資獲利"],a:1},
+{q:"近年電動車市場快速成長。假設某電動車品牌的售價大幅上升，而電池成本、技術、生產設備及其他條件皆維持不變。對該品牌而言，下列哪一項最符合供給法則？",o:["因為售價提高，廠商願意增加生產量","因為售價提高，消費者的需求量增加","因為售價提高，供給曲線向左移動","因為售價提高，廠商的生產成本必然下降"],a:0},
+{q:"當物價水準從 120 上升至 150，則物價膨脹率為？",o:["20%","25%","30%","33%"],a:1},
+{q:"政府開放牛肉進口可能造成？",o:["牛肉價格與購買量均增加","牛肉價格提高，購買量下降","牛肉價格與購買量均下降","牛肉價格下降，購買量提高"],a:3}
+],
+hard:[
+{q:"某知名咖啡品牌推出季節限定飲品。由於原料成本上升，店家將飲品價格從 60 元調高至 75 元。在消費者所得、偏好及其他條件不變的情況下，最可能出現下列哪一種結果？",o:["消費者對該飲品的需求增加，因此購買量上升","消費者對該飲品的需求量減少，因此購買量下降","該飲品的需求曲線向右移動，因此購買量上升","該飲品的需求曲線向左移動，因此均衡價格下降"],a:1},
+{q:"當一國之實質國內生產毛額（GDP）低於充分就業水準下之實質 GDP 時，中央銀行施行下列何種政策，最可能提高就業與產出？",o:["增加貨幣供給、提高利率","減少貨幣供給、降低利率","增加貨幣供給、降低利率","減少貨幣供給、提高利率"],a:2},
+{q:"下列哪一種狀況不會使總合需求線移動？",o:["政府減稅","台幣貶值","物價下降","民眾變得更節儉"],a:2},
+{q:"近年來台灣流行健康飲食，許多消費者減少飲用含糖飲料，轉而購買無糖燕麥奶；與此同時，燕麥的種植技術改良，使燕麥的生產成本大幅降低。在其他條件不變下，請問燕麥奶市場的均衡價格與均衡數量將會如何變化？",o:["價格上升，數量無法確定","價格下降，數量無法確定","價格無法確定，數量上升","價格下降，數量上升"],a:3},
+{q:"當政府為了保護特定群體而對市場實施干預時，常會引發不同的經濟現象。下列關於政府管制的敘述，何者正確？",o:["基本工資屬於價格上限，會造成勞動市場供過於求","房價天花板屬於價格下限，會造成供不應求","有效的價格上限會造成產品短缺，可能引發黑市交易","有效的價格下限必須低於市場原本的均衡價格"],a:2},
+{q:"在計算台灣的國內生產毛額（GDP）時，下列哪一項數值應該被計入？",o:["大雄買進台積電股票所支付的股款","菲籍移工在木柵工作所賺取的薪資","媽媽在家裡大掃除、煮飯的勞務價值","小明在二手車網站上買賣中古車的車價"],a:1},
+{q:"當市場發生嚴重的通貨膨脹（物價持續大幅上漲）時，在其他條件不變下，下列哪一個群體通常會是受益者？",o:["領取固定退休金的老人","借錢給別人的債權人（銀行）","向銀行貸款買房的債務人","把薪水存在銀行賺利息的上班族"],a:2}
+]};
+const decks={},last={};
+let level=null,cur=null,answered=false;
+const $=id=>document.getElementById(id);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function draw(lv){
+  if(!decks[lv]||!decks[lv].length){
+    let d=shuffle(BANK[lv].map((_,i)=>i));
+    if(d.length>1&&d[d.length-1]===last[lv]){[d[0],d[d.length-1]]=[d[d.length-1],d[0]]}
+    decks[lv]=d;
+  }
+  const i=decks[lv].pop();last[lv]=i;return BANK[lv][i];
+}
+function show(){
+  cur=draw(level);answered=false;
+  const letters=["A","B","C","D"];
+  const opts=shuffle(cur.o.map((t,i)=>({t,ok:i===cur.a})));
+  $("qtext").textContent=cur.q;
+  const box=$("opts");box.textContent="";
+  opts.forEach((o,i)=>{
+    const b=document.createElement("button");b.className="opt";b.type="button";
+    const k=document.createElement("span");k.className="k";k.textContent=letters[i];
+    const s=document.createElement("span");s.textContent=o.t;
+    b.append(k,s);b.onclick=()=>pick(b,o.ok);box.appendChild(b);
+  });
+  const r=$("result");r.textContent="";r.className="result";
+  $("next").hidden=true;
+  $("empty").hidden=true;$("quiz").hidden=false;
+}
+function pick(btn,ok){
+  if(answered)return;answered=true;
+  document.querySelectorAll(".opt").forEach(b=>b.disabled=true);
+  btn.classList.add(ok?"ok":"bad");
+  const r=$("result");r.textContent=ok?"答對 ✓":"答錯 ✗";r.className="result "+(ok?"ok":"bad");
+  $("next").hidden=false;
+}
+document.querySelectorAll("#levels button").forEach(b=>b.onclick=()=>{
+  level=b.dataset.lv;
+  document.querySelectorAll("#levels button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  show();
+});
+$("next").onclick=show;
+</script>
+</body>
+</html>
